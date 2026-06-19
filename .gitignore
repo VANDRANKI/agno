@@ -1,103 +1,78 @@
-# See https://help.github.com/ignore-files/ for more about ignoring files.
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
 
-.DS_Store
+# C extensions
+*.so
 
-# Python cache
-.mypy_cache
-*__pycache__*
-*.egg-info
-*.pyc
-*.pytest_cache
-*.ruff_cache
-*.cache*
-*.config*
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+.eggs/
 
-# Machine specific
-.idea
-.vscode
-*.code-workspace
+# Virtual environments
+.venv/
+venv/
+env/
+# Demo virtual environments (referenced in CLAUDE.md)
+.venvs/
 
-# Ignore .env files
-.env
-
-# Ignore .envrc files (used by direnv: https://direnv.net/)
-.envrc
-
-certs/
-
-# ignore storage dir
-/storage
-.images
-/qdrant_storage
-
-# ignore wip dir
-wip
-
-# ignore dist dir
-dist
-
-# ignore virtualenvs
-.venv*
-.perfenv*
-.demoenv*
-.gemini-agents*
-.getting-started*
-venv*
-agnoenv*
-aienv*
-phienv*
-set-env.ps1
-
-# ignore tmp dirs
-scratch
-junk
-tmp
-agents.db
-data.db
-.ipynb_checkpoints
-build
-audio_generations
-
-*.db
-
-# Google OAuth tokens
-gmail_token.json
-calendar_token.json
-gdrive_token.json
-
-.composio.lock
-
-# Coverage
-coverage_report
+# pytest / coverage
+.pytest_cache/
 .coverage
+.coverage.*
+htmlcov/
+coverage.xml
 
-# JSON files used as testing DB
-agno_json_data/
+# Type checking
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.pyright/
 
-# Wiki cookbook artifacts
-cookbook/12_context/demo-wiki/
-cookbook/12_context/demo-wiki-web/
-cookbook/12_context/demo-wiki-dual/
-cookbook/12_context/demo-wiki-git/
+# Ruff
+.ruff_cache/
 
-# AI
-.claude/
-.cursor/
-.conductor/
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb_checkpoints/
+
+# mkdocs
+site/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Editor swap files
+*.swp
+*.swo
+*~
+
+# JetBrains IDE
+.idea/
+*.iml
+
+# VS Code
+.vscode/
+
+# Agno-specific scratch notes (referenced in CLAUDE.md)
 .context/
-.codex/
 
-# Private design documents (symlinked)
-/specs
-/docs
-/projects
-/agno-os
-/apps
+# Local environment
+.env
+.env.local
 
-# Private Claude coding session preferences
-CLAUDE_PRIVATE.md
+# node (for any JS tooling)
+node_modules/
 
-# ignore pyrightconfig.json
-pyrightconfig.json
-.python-version
-CLAUDE_PRIVATE.md
+# Logs
+*.log
