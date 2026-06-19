@@ -1,3 +1,27 @@
+"""Exception hierarchy for the agno framework.
+
+This module defines all custom exceptions raised by agno agents, teams,
+guardrails, and model providers.  The hierarchy is:
+
+::
+
+    Exception
+    ├── AgentRunException          # base for controllable agent errors
+    │   ├── RetryAgentRun          # signal the caller to retry
+    │   └── StopAgentRun           # signal the caller to halt
+    ├── RunCancelledException      # user-initiated cancellation
+    ├── AgnoError                  # internal / infrastructure errors
+    │   ├── ModelAuthenticationError
+    │   ├── ModelProviderError
+    │   │   ├── ModelRateLimitError
+    │   │   └── ContextWindowExceededError
+    │   ├── RemoteServerUnavailableError
+    │   └── PathSecurityError
+    ├── EvalError
+    ├── InputCheckError            # guardrail input violations
+    └── OutputCheckError           # guardrail output violations
+"""
+
 from dataclasses import dataclass
 from enum import Enum
 from typing import Any, Dict, List, Optional, Union
@@ -6,6 +30,34 @@ from agno.models.message import Message
 
 
 class AgentRunException(Exception):
+    """Base exception for errors that occur during an agent run.
+
+    Subclasses signal different recovery strategies to the calling layer:
+    :class:`RetryAgentRun` requests a retry, while :class:`StopAgentRun`
+    requests immediate termination.
+
+    Args:
+        exc: The underlying exception or error message that caused the failure.
+        user_message: Optional message to surface to the end-user explaining
+            the failure in human-readable terms.  Can be a plain string or a
+            :class:`~agno.models.message.Message` object.
+        agent_message: Optional message to inject into the agent's conversation
+            context (e.g., an apology or a retry prompt).  Can be a plain
+            string or a :class:`~agno.models.message.Message` object.
+        messages: Optional list of additional messages to append to the
+            conversation history before the next agent step.
+        stop_execution: When ``True``, the agent loop should terminate after
+            handling this exception.  When ``False``, the caller may retry.
+
+    Attributes:
+        user_message: See *user_message* parameter.
+        agent_message: See *agent_message* parameter.
+        messages: See *messages* parameter.
+        stop_execution: Whether the agent should halt execution.
+        type: Fixed string ``"agent_run_error"``.
+        error_id: Subclass-specific error identifier string.
+    """
+
     def __init__(
         self,
         exc,
@@ -24,7 +76,12 @@ class AgentRunException(Exception):
 
 
 class RetryAgentRun(AgentRunException):
-    """Exception raised when a tool call should be retried."""
+    """Exception raised when a tool call should be retried.
+
+    Signals the agent loop to re-invoke the current step without surfacing
+    the error to the user.  Use this when a transient failure (e.g., a
+    network hiccup) occurred and the operation is safe to repeat.
+    """
 
     def __init__(
         self,
@@ -40,7 +97,12 @@ class RetryAgentRun(AgentRunException):
 
 
 class StopAgentRun(AgentRunException):
-    """Exception raised when an agent should stop executing entirely."""
+    """Exception raised when an agent should stop executing entirely.
+
+    Signals the agent loop to halt immediately, optionally surfacing
+    *user_message* or injecting *agent_message* into the conversation
+    before stopping.
+    """
 
     def __init__(
         self,
@@ -193,7 +255,22 @@ class CheckTrigger(Enum):
 
 
 class InputCheckError(Exception):
-    """Exception raised when an input check fails."""
+    """Exception raised when an input guardrail check fails.
+
+    Raised by guardrail implementations to signal that the user's input
+    violates a configured policy (e.g., off-topic, PII detected, prompt
+    injection attempt).  The agent framework catches this and either
+    surfaces *message* to the user or halts the run.
+
+    Args:
+        message: Human-readable description of the guardrail violation.
+        check_trigger: The :class:`CheckTrigger` enum value describing
+            the category of violation.  Defaults to
+            :attr:`CheckTrigger.INPUT_NOT_ALLOWED`.
+        additional_data: Optional dict of extra context about the violation
+            (e.g., detected PII types, off-topic score) for logging or
+            downstream processing.
+    """
 
     def __init__(
         self,
@@ -214,7 +291,22 @@ class InputCheckError(Exception):
 
 
 class OutputCheckError(Exception):
-    """Exception raised when an output check fails."""
+    """Exception raised when an output guardrail check fails.
+
+    Raised by guardrail implementations to signal that the model's
+    response violates a configured output policy (e.g., contains PII,
+    unsafe content, or off-topic material).  The agent framework catches
+    this and either regenerates the response or surfaces *message* to
+    the caller.
+
+    Args:
+        message: Human-readable description of the guardrail violation.
+        check_trigger: The :class:`CheckTrigger` enum value describing
+            the category of violation.  Defaults to
+            :attr:`CheckTrigger.OUTPUT_NOT_ALLOWED`.
+        additional_data: Optional dict of extra context about the violation
+            for logging or downstream processing.
+    """
 
     def __init__(
         self,
@@ -236,6 +328,16 @@ class OutputCheckError(Exception):
 
 @dataclass
 class RetryableModelProviderError(Exception):
+    """Dataclass exception carrying guidance for retrying a model invocation.
+
+    Attributes:
+        original_error: String representation of the original error that
+            triggered this retryable condition.
+        retry_guidance_message: A message (often constructed by the model
+            itself) suggesting how the next invocation should differ to
+            avoid the error.
+    """
+
     original_error: Optional[str] = None
     # Guidance message to retry a model invocation after an error
     retry_guidance_message: Optional[str] = None
