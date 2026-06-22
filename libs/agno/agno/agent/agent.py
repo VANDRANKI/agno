@@ -741,12 +741,43 @@ class Agent:
         return _init.set_id(self)
 
     def initialize_agent(self, debug_mode: Optional[bool] = None) -> None:
+        """Initialize the agent, lazily setting up models, tools, and knowledge.
+
+        This is called automatically on the first run. Call it explicitly when
+        you need the agent to be fully initialized before the first run (e.g.,
+        when inspecting resolved tool lists at import time).
+
+        Args:
+            debug_mode: Override the agent-level debug_mode for this initialization.
+                When True, enables verbose logging of the initialization steps.
+        """
         return _init.initialize_agent(self, debug_mode=debug_mode)
 
     def add_tool(self, tool: Union[Toolkit, Callable, Function, Dict]) -> None:
+        """Append a single tool to the agent's tool list.
+
+        The tool is appended after any tools already configured at construction
+        time. Duplicates are not checked — callers are responsible for avoiding
+        them.
+
+        Args:
+            tool: A Toolkit instance, a plain Python callable, a Function
+                descriptor, or a raw dict following the OpenAI function-calling
+                schema.
+        """
         return _init.add_tool(self, tool)
 
     def set_tools(self, tools: Union[Sequence[Union[Toolkit, Callable, Function, Dict]], Callable[..., List]]) -> None:
+        """Replace the agent's tool list entirely.
+
+        Unlike `add_tool`, this method overwrites the existing tools. Use it
+        when you want to swap out the full tool set between runs without
+        constructing a new Agent instance.
+
+        Args:
+            tools: A sequence of Toolkit, callable, Function, or dict objects,
+                or a callable factory that returns such a list at runtime.
+        """
         return _init.set_tools(self, tools)
 
     def clear_callable_cache(
@@ -901,6 +932,27 @@ class Agent:
         label: Optional[str] = None,
         notes: Optional[str] = None,
     ) -> Optional[int]:
+        """Persist the agent configuration to the database.
+
+        Serializes the agent's settings to the `litellm_tooltable` component
+        store. Each call creates a new immutable version; existing versions are
+        never mutated. The new version number is returned so callers can pin
+        specific snapshots.
+
+        Args:
+            db: Database handle to save to. Falls back to ``self.db`` when
+                ``None``.
+            stage: Lifecycle stage tag for this version (e.g. ``"published"``,
+                ``"draft"``).
+            label: Human-readable label for quick lookup (e.g. ``"v2-prod"``).
+                Labels are unique per agent; saving with an existing label
+                reassigns it to the new version.
+            notes: Free-text release notes stored alongside the version.
+
+        Returns:
+            The integer version number of the saved snapshot, or ``None`` if
+            the save failed.
+        """
         return _storage.save(self, db=db, stage=stage, label=label, notes=notes)
 
     @classmethod
@@ -913,6 +965,24 @@ class Agent:
         label: Optional[str] = None,
         version: Optional[int] = None,
     ) -> Optional["Agent"]:
+        """Reconstruct an Agent from a previously saved configuration.
+
+        Resolution order: if ``label`` is provided, that labeled version is
+        loaded; otherwise the component's current (latest) version is used;
+        ``version`` can pin an exact snapshot regardless of label.
+
+        Args:
+            id: The agent's ``entity_id`` as stored in the database.
+            db: Database handle to load from.
+            registry: Optional Registry used to reconstruct unserializable
+                components (custom tools, knowledge bases, etc.) that were
+                stripped during serialization.
+            label: Named label identifying the version to load.
+            version: Exact version number to load.
+
+        Returns:
+            A fully reconstructed ``Agent`` instance, or ``None`` if not found.
+        """
         return _storage.load(cls, id=id, db=db, registry=registry, label=label, version=version)
 
     def delete(
@@ -921,6 +991,21 @@ class Agent:
         db: Optional["BaseDb"] = None,
         hard_delete: bool = False,
     ) -> bool:
+        """Remove the agent from the database.
+
+        By default performs a soft-delete (marks the component as inactive)
+        so historical versions remain queryable. Pass ``hard_delete=True`` to
+        permanently purge all versions and associated run outputs.
+
+        Args:
+            db: Database handle. Falls back to ``self.db`` when ``None``.
+            hard_delete: When ``True``, all versions and run data are
+                permanently deleted. When ``False`` (default), the component
+                is soft-deleted and hidden from normal listings.
+
+        Returns:
+            ``True`` if the deletion succeeded, ``False`` otherwise.
+        """
         return _storage.delete(self, db=db, hard_delete=hard_delete)
 
     def get_run_output(
@@ -944,6 +1029,18 @@ class Agent:
         session_id: Optional[str] = None,
         user_id: Optional[str] = None,
     ) -> Optional[Union[AgentSession, TeamSession, WorkflowSession]]:
+        """Retrieve the current or a specific agent session from the database.
+
+        Args:
+            session_id: ID of the session to retrieve. Defaults to
+                ``self.session_id`` when ``None``.
+            user_id: User scope for the lookup. Defaults to ``self.user_id``
+                when ``None``.
+
+        Returns:
+            The matching ``AgentSession``, ``TeamSession``, or
+            ``WorkflowSession``, or ``None`` if no session is found.
+        """
         return _session.get_session(self, session_id=session_id, user_id=user_id)
 
     async def aget_session(
@@ -951,6 +1048,17 @@ class Agent:
         session_id: Optional[str] = None,
         user_id: Optional[str] = None,
     ) -> Optional[Union[AgentSession, TeamSession, WorkflowSession]]:
+        """Async variant of `get_session`.
+
+        Args:
+            session_id: ID of the session to retrieve. Defaults to
+                ``self.session_id`` when ``None``.
+            user_id: User scope for the lookup. Defaults to ``self.user_id``
+                when ``None``.
+
+        Returns:
+            The matching session object, or ``None`` if not found.
+        """
         return await _session.aget_session(self, session_id=session_id, user_id=user_id)
 
     def save_session(self, session: Union[AgentSession, TeamSession, WorkflowSession]) -> None:
@@ -1133,6 +1241,51 @@ class Agent:
         tags_to_include_in_markdown: Optional[Set[str]] = None,
         **kwargs: Any,
     ) -> None:
+        """Run the agent and print the response to the terminal using Rich.
+
+        Convenience wrapper around `run()` that formats and prints the agent
+        output directly instead of returning it. Useful for scripts, notebooks,
+        and interactive demos.
+
+        Args:
+            input: The user message — a plain string, a pre-built `Message`,
+                a `BaseModel` instance, or a list of messages for multi-turn
+                context.
+            session_id: Override the agent's default session ID for this call.
+            session_state: Key-value pairs merged into the session state before
+                the run.
+            user_id: Override the agent's default user ID for this call.
+            run_id: Explicit run ID; auto-generated when ``None``.
+            audio: Audio attachments to pass alongside the input.
+            images: Image attachments to pass alongside the input.
+            videos: Video attachments to pass alongside the input.
+            files: File attachments to pass alongside the input.
+            stream: Whether to stream the response token-by-token. Overrides
+                the agent-level ``stream`` setting for this call.
+            markdown: Render the response as Markdown. Overrides the
+                agent-level ``markdown`` setting.
+            knowledge_filters: Filters applied to knowledge-base retrieval for
+                this run only.
+            add_history_to_context: Include chat history in the context for
+                this run.
+            add_dependencies_to_context: Include agent dependencies in the
+                context for this run.
+            dependencies: Additional dependencies injected for this run.
+            add_session_state_to_context: Include session state in the context
+                for this run.
+            metadata: Arbitrary key-value metadata attached to this run.
+            debug_mode: Override debug logging for this call.
+            show_message: Print the user message before the response.
+            show_reasoning: Print intermediate reasoning steps if available.
+            show_full_reasoning: Print the complete reasoning chain including
+                internal chain-of-thought content.
+            console: Rich ``Console`` instance to write to. Defaults to
+                stdout.
+            tags_to_include_in_markdown: XML-style tags whose content should
+                be rendered as Markdown (e.g. ``{"thinking", "plan"}``).
+            **kwargs: Additional keyword arguments forwarded to the underlying
+                run implementation.
+        """
         return _cli.agent_print_response(
             self,
             input=input,
@@ -1189,6 +1342,39 @@ class Agent:
         tags_to_include_in_markdown: Optional[Set[str]] = None,
         **kwargs: Any,
     ) -> None:
+        """Async variant of `print_response`.
+
+        Runs the agent asynchronously and prints the formatted response.
+        Suitable for use inside ``asyncio`` event loops and FastAPI handlers.
+
+        Args:
+            input: The user message or list of messages.
+            session_id: Override the agent's default session ID.
+            session_state: Key-value pairs merged into the session state.
+            user_id: Override the agent's default user ID.
+            run_id: Explicit run ID; auto-generated when ``None``.
+            audio: Audio attachments.
+            images: Image attachments.
+            videos: Video attachments.
+            files: File attachments.
+            stream: Whether to stream the response. Overrides agent-level
+                setting.
+            markdown: Render the response as Markdown.
+            knowledge_filters: Filters for knowledge-base retrieval.
+            add_history_to_context: Include chat history in context.
+            dependencies: Additional dependencies for this run.
+            add_dependencies_to_context: Include dependencies in context.
+            add_session_state_to_context: Include session state in context.
+            metadata: Arbitrary metadata attached to this run.
+            debug_mode: Override debug logging.
+            show_message: Print the user message before the response.
+            show_reasoning: Print reasoning steps.
+            show_full_reasoning: Print the full reasoning chain.
+            console: Rich ``Console`` instance. Defaults to stdout.
+            tags_to_include_in_markdown: Tags whose content is rendered as
+                Markdown.
+            **kwargs: Additional keyword arguments forwarded to the run.
+        """
         return await _cli.agent_aprint_response(
             self,
             input=input,
@@ -1229,6 +1415,26 @@ class Agent:
         exit_on: Optional[List[str]] = None,
         **kwargs: Any,
     ) -> None:
+        """Start an interactive CLI loop powered by this agent.
+
+        Reads user input from stdin in a loop and prints the agent's response
+        until the user types one of the exit phrases or sends EOF. Useful for
+        building simple terminal chatbots with a single line of code.
+
+        Args:
+            input: Optional initial message sent before entering the loop.
+            session_id: Session ID to use. A new session is created when
+                ``None``.
+            user_id: User ID scope for this session.
+            user: Display name shown in the prompt (e.g. ``"User"`` or a
+                custom username).
+            emoji: Rich emoji code prepended to the user prompt.
+            stream: Stream the agent's response token-by-token.
+            markdown: Render the agent's responses as Markdown.
+            exit_on: List of phrases that end the loop (case-insensitive).
+                Defaults to ``["exit", "quit", "bye"]``.
+            **kwargs: Additional keyword arguments forwarded to each run.
+        """
         return _cli.cli_app(
             self,
             input=input,
@@ -1254,6 +1460,21 @@ class Agent:
         exit_on: Optional[List[str]] = None,
         **kwargs: Any,
     ) -> None:
+        """Async variant of `cli_app`.
+
+        Suitable for running inside an existing ``asyncio`` event loop.
+
+        Args:
+            input: Optional initial message sent before entering the loop.
+            session_id: Session ID to use.
+            user_id: User ID scope for this session.
+            user: Display name shown in the prompt.
+            emoji: Rich emoji code prepended to the user prompt.
+            stream: Stream the agent's response token-by-token.
+            markdown: Render responses as Markdown.
+            exit_on: Phrases that end the loop.
+            **kwargs: Additional keyword arguments forwarded to each run.
+        """
         return await _cli.acli_app(
             self,
             input=input,
@@ -1359,6 +1580,58 @@ class Agent:
         debug_mode: Optional[bool] = None,
         **kwargs: Any,
     ) -> Union[RunOutput, Iterator[Union[RunOutputEvent, RunOutput]]]:
+        """Execute the agent synchronously.
+
+        This is the primary entry point for running the agent. The return type
+        depends on the ``stream`` argument:
+
+        - ``stream=False`` (default): blocks until the model finishes and
+          returns a single :class:`RunOutput`.
+        - ``stream=True``: returns an ``Iterator`` that yields
+          :class:`RunOutputEvent` objects as the model streams tokens, with a
+          final :class:`RunOutput` emitted when ``yield_run_output=True``.
+
+        Pre-hooks run before the model is called; post-hooks run after. Retries
+        (configured via ``retries`` / ``delay_between_retries`` /
+        ``exponential_backoff``) are applied transparently.
+
+        Args:
+            input: The user message — a plain string, a list of messages, a
+                dict, a ``BaseModel``, or a single ``Message`` object.
+            stream: Stream tokens as they are generated. When ``None``, falls
+                back to the agent-level ``stream`` setting.
+            stream_events: Emit structured run-lifecycle events in addition to
+                content tokens. Requires ``stream=True``.
+            user_id: Override the agent's default user ID.
+            session_id: Override the agent's default session ID.
+            session_state: Key-value pairs merged into the session state before
+                the run.
+            run_context: Pre-built :class:`RunContext` injected into tools and
+                prompt functions.
+            run_id: Explicit run ID; auto-generated when ``None``.
+            audio: Audio attachments forwarded to the model.
+            images: Image attachments forwarded to the model.
+            videos: Video attachments forwarded to the model.
+            files: File attachments forwarded to the model.
+            knowledge_filters: Filters applied to knowledge-base retrieval for
+                this run only.
+            add_history_to_context: Include previous runs from this session in
+                the context.
+            add_dependencies_to_context: Include agent dependencies in context.
+            add_session_state_to_context: Include session state in context.
+            dependencies: Additional dependencies injected for this run.
+            metadata: Arbitrary key-value metadata stored on the run.
+            output_schema: Override the agent-level ``output_schema`` for
+                structured output.
+            yield_run_output: When streaming, emit the final
+                :class:`RunOutput` as the last yielded item.
+            debug_mode: Override debug logging for this call.
+            **kwargs: Extra keyword arguments forwarded to the model.
+
+        Returns:
+            A :class:`RunOutput` when ``stream=False``, or an
+            ``Iterator[RunOutputEvent | RunOutput]`` when ``stream=True``.
+        """
         return _run.run_dispatch(
             self,
             input=input,
@@ -1467,6 +1740,46 @@ class Agent:
         background: bool = False,
         **kwargs: Any,
     ) -> Union[RunOutput, AsyncIterator[RunOutputEvent]]:
+        """Execute the agent asynchronously.
+
+        Async counterpart to `run`. Must be awaited when ``stream=False``; used
+        as an async iterator when ``stream=True``.
+
+        The ``background`` flag offloads the run to a thread-pool executor so
+        it can be invoked from a sync context (e.g. a team coordinator) without
+        blocking the event loop.
+
+        Args:
+            input: The user message or list of messages.
+            stream: Stream tokens as they are generated.
+            user_id: Override the agent's default user ID.
+            session_id: Override the agent's default session ID.
+            session_state: Key-value pairs merged into the session state.
+            run_context: Pre-built :class:`RunContext` injected into tools.
+            run_id: Explicit run ID; auto-generated when ``None``.
+            audio: Audio attachments.
+            images: Image attachments.
+            videos: Video attachments.
+            files: File attachments.
+            stream_events: Emit structured run-lifecycle events.
+            knowledge_filters: Filters for knowledge-base retrieval.
+            add_history_to_context: Include chat history in context.
+            add_dependencies_to_context: Include dependencies in context.
+            add_session_state_to_context: Include session state in context.
+            dependencies: Additional dependencies for this run.
+            metadata: Arbitrary metadata stored on the run.
+            output_schema: Override the agent-level structured output schema.
+            yield_run_output: Emit the final :class:`RunOutput` as the last
+                streamed item.
+            debug_mode: Override debug logging.
+            background: Run in a background thread to avoid blocking the event
+                loop.
+            **kwargs: Extra keyword arguments forwarded to the model.
+
+        Returns:
+            A coroutine resolving to :class:`RunOutput` when ``stream=False``,
+            or an ``AsyncIterator[RunOutputEvent]`` when ``stream=True``.
+        """
         return _run.arun_dispatch(
             self,
             input=input,
@@ -1551,6 +1864,40 @@ class Agent:
         yield_run_output: bool = False,
         **kwargs,
     ) -> Union[RunOutput, Iterator[Union[RunOutputEvent, RunOutput]]]:
+        """Resume a paused or pending run.
+
+        Use this method when a previous `run` returned a :class:`RunOutput`
+        with ``status=pending`` — for example, because a tool required human
+        approval or an external callback. Pass back the original
+        :class:`RunOutput` (or its ``run_id``) together with any
+        ``updated_tools`` results or fulfilled ``requirements``.
+
+        Args:
+            run_response: The :class:`RunOutput` returned by the paused run.
+                Mutually exclusive with ``run_id`` — provide one or the other.
+            run_id: ID of the run to resume. Used when ``run_response`` is not
+                available.
+            updated_tools: Tool execution results to inject when resuming after
+                a human-in-the-loop tool approval step.
+            requirements: Fulfilled :class:`RunRequirement` objects that
+                unblocked the run.
+            stream: Stream tokens during the resumed run.
+            stream_events: Emit structured lifecycle events.
+            user_id: Override the user ID for the resumed run.
+            session_id: Override the session ID for the resumed run.
+            run_context: Pre-built context injected into tools.
+            knowledge_filters: Filters for knowledge-base retrieval.
+            dependencies: Additional dependencies for the resumed run.
+            metadata: Arbitrary metadata stored on this continuation.
+            debug_mode: Override debug logging.
+            yield_run_output: Emit the final :class:`RunOutput` as the last
+                streamed item.
+            **kwargs: Extra keyword arguments forwarded to the model.
+
+        Returns:
+            A :class:`RunOutput` when ``stream=False``, or an
+            ``Iterator[RunOutputEvent | RunOutput]`` when ``stream=True``.
+        """
         return _run.continue_run_dispatch(
             self,
             run_response=run_response,
@@ -1628,6 +1975,34 @@ class Agent:
         background: bool = False,
         **kwargs,
     ) -> Union[RunOutput, AsyncIterator[Union[RunOutputEvent, RunOutput]]]:
+        """Async variant of `continue_run`.
+
+        Resumes a paused or pending run asynchronously. See `continue_run` for
+        full parameter documentation.
+
+        Args:
+            run_response: The :class:`RunOutput` from the paused run.
+            run_id: ID of the run to resume.
+            updated_tools: Tool execution results for human-in-the-loop steps.
+            requirements: Fulfilled requirements that unblocked the run.
+            stream: Stream tokens during the resumed run.
+            stream_events: Emit structured lifecycle events.
+            user_id: Override the user ID.
+            session_id: Override the session ID.
+            run_context: Pre-built context injected into tools.
+            knowledge_filters: Filters for knowledge-base retrieval.
+            dependencies: Additional dependencies for the resumed run.
+            metadata: Arbitrary metadata stored on this continuation.
+            debug_mode: Override debug logging.
+            yield_run_output: Emit the final :class:`RunOutput` as the last
+                streamed item.
+            background: Run in a background thread.
+            **kwargs: Extra keyword arguments forwarded to the model.
+
+        Returns:
+            A coroutine resolving to :class:`RunOutput` when
+            ``stream=False``, or an ``AsyncIterator`` when ``stream=True``.
+        """
         return _run.acontinue_run_dispatch(
             self,
             run_response=run_response,
