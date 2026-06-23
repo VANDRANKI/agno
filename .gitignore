@@ -1,103 +1,86 @@
-# See https://help.github.com/ignore-files/ for more about ignoring files.
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
 
+# Virtual environments
+.venv/
+.venvs/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Distribution / packaging
+*.tar.gz
+*.whl
+
+# Testing
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+cover/
+htmlcov/
+
+# Type checking
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.pytype/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+*.ipynb_checkpoints
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
 .DS_Store
 
-# Python cache
-.mypy_cache
-*__pycache__*
-*.egg-info
-*.pyc
-*.pytest_cache
-*.ruff_cache
-*.cache*
-*.config*
-
-# Machine specific
-.idea
-.vscode
-*.code-workspace
-
-# Ignore .env files
-.env
-
-# Ignore .envrc files (used by direnv: https://direnv.net/)
-.envrc
-
-certs/
-
-# ignore storage dir
-/storage
-.images
-/qdrant_storage
-
-# ignore wip dir
-wip
-
-# ignore dist dir
-dist
-
-# ignore virtualenvs
-.venv*
-.perfenv*
-.demoenv*
-.gemini-agents*
-.getting-started*
-venv*
-agnoenv*
-aienv*
-phienv*
-set-env.ps1
-
-# ignore tmp dirs
-scratch
-junk
-tmp
-agents.db
-data.db
-.ipynb_checkpoints
-build
-audio_generations
-
-*.db
-
-# Google OAuth tokens
-gmail_token.json
-calendar_token.json
-gdrive_token.json
-
-.composio.lock
-
-# Coverage
-coverage_report
-.coverage
-
-# JSON files used as testing DB
-agno_json_data/
-
-# Wiki cookbook artifacts
-cookbook/12_context/demo-wiki/
-cookbook/12_context/demo-wiki-web/
-cookbook/12_context/demo-wiki-dual/
-cookbook/12_context/demo-wiki-git/
-
-# AI
-.claude/
-.cursor/
-.conductor/
+# Project specific
 .context/
-.codex/
+scratch/
+local_dev/
+*.local.py
 
-# Private design documents (symlinked)
-/specs
-/docs
-/projects
-/agno-os
-/apps
+# Secrets and environment
+.env
+.env.local
+.env.*.local
+*.secret
 
-# Private Claude coding session preferences
-CLAUDE_PRIVATE.md
+# Logs
+logs/
+*.log
 
-# ignore pyrightconfig.json
-pyrightconfig.json
-.python-version
-CLAUDE_PRIVATE.md
+# Docker
+.docker/
