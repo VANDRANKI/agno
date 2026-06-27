@@ -24,6 +24,47 @@ Agno allows you to own your agent stack. Maintain control of your data, context,
 
 <img width="3192" height="2038" alt="demo-os" src="https://github.com/user-attachments/assets/6d21e6bc-111f-4b81-ba29-6550fead89b2" />
 
+## Installation
+
+Install the core Agno library:
+
+```bash
+pip install agno
+```
+
+For development (with all optional dependencies):
+
+```bash
+pip install agno[all]
+```
+
+Requires Python 3.10 or later.
+
+## Quick Start
+
+Build your first agent in a few lines of code:
+
+```python
+from agno.agent import Agent
+from agno.models.openai import OpenAIChat
+
+agent = Agent(
+    model=OpenAIChat(id="gpt-4o"),
+    instructions="You are a helpful assistant.",
+    markdown=True,
+)
+
+agent.print_response("Tell me about the Agno framework in 2 sentences.")
+```
+
+Run the agent:
+
+```bash
+OPENAI_API_KEY=your-key python my_agent.py
+```
+
+For a more detailed walkthrough, see [Build your first agent](https://docs.agno.com/first-agent) in the docs.
+
 ## What you can build
 
 Agno can bring any agent to life, here are some examples:
