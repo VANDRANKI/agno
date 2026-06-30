@@ -22,7 +22,7 @@ def pcm_to_wav_bytes(
     return buf.getvalue()
 
 
-def write_audio_to_file(audio, filename: str):
+def write_audio_to_file(audio: str, filename: str) -> None:
     """
     Write base64 encoded audio file to disk.
 
