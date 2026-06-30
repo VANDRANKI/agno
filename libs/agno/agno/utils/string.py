@@ -31,7 +31,20 @@ def is_valid_uuid(uuid_str: str) -> bool:
         return False
 
 
-def url_safe_string(input_string):
+def url_safe_string(input_string: str) -> str:
+    """
+    Convert a string into a URL-safe, kebab-case slug.
+
+    Spaces, camelCase boundaries, and underscores are all converted to
+    dashes, special characters are stripped, and consecutive dashes are
+    collapsed into one.
+
+    Args:
+        input_string: The string to convert.
+
+    Returns:
+        A lowercase, URL-safe version of the input string.
+    """
     # Replace spaces with dashes
     safe_string = input_string.replace(" ", "-")
 
