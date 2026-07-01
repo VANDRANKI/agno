@@ -281,6 +281,22 @@ def _parse_model_string(model_string: str) -> Model:
 
 
 def get_model(model: Union[Model, str, None]) -> Optional[Model]:
+    """Normalize a model reference into a `Model` instance.
+
+    Accepts an existing `Model` (returned as-is), `None` (returned as-is),
+    or a `"<provider>:<model_id>"` string (e.g. `"openai:gpt-5.4"`), which is
+    parsed and resolved to the matching `Model` subclass via `_parse_model_string`.
+
+    Args:
+        model: A `Model` instance, a `"<provider>:<model_id>"` string, or `None`.
+
+    Returns:
+        The resolved `Model` instance, or `None` if `model` is `None`.
+
+    Raises:
+        ValueError: If `model` is not a `Model`, `str`, or `None`, or if the
+            string does not match the expected `"<provider>:<model_id>"` format.
+    """
     if model is None:
         return None
     elif isinstance(model, Model):
