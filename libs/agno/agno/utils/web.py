@@ -4,10 +4,14 @@ from pathlib import Path
 from agno.utils.log import log_error
 
 
-def open_html_file(file_path: Path):
-    """
-    Opens the specified HTML file in the default web browser.
-    :param file_path: Path to the HTML file.
+def open_html_file(file_path: Path) -> None:
+    """Open the specified HTML file in the default web browser.
+
+    Args:
+        file_path: Path to the HTML file.
+
+    Raises:
+        FileNotFoundError: If `file_path` does not resolve to an existing file.
     """
     # Resolve the absolute path
     absolute_path = file_path.resolve()
