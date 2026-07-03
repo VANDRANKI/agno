@@ -30,18 +30,22 @@ def parse_datetime_utc(value: Any) -> datetime:
 
 
 def current_datetime() -> datetime:
+    """Return the current local datetime (naive, no timezone attached)."""
     return datetime.now()
 
 
 def current_datetime_utc() -> datetime:
+    """Return the current UTC-aware datetime."""
     return datetime.now(timezone.utc)
 
 
 def current_datetime_utc_str() -> str:
+    """Return the current UTC datetime formatted as an ISO 8601 string (seconds precision)."""
     return current_datetime_utc().strftime("%Y-%m-%dT%H:%M:%S")
 
 
 def now_epoch_s() -> int:
+    """Return the current UTC time as whole epoch seconds."""
     return int(datetime.now(timezone.utc).timestamp())
 
 
