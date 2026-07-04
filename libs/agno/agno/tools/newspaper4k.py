@@ -61,8 +61,8 @@ class Newspaper4kTools(Toolkit):
             try:
                 if article.publish_date:
                     article_data["publish_date"] = article.publish_date.isoformat() if article.publish_date else None
-            except Exception:
-                pass
+            except Exception as e:
+                log_debug(f"Could not parse publish_date for {url}: {e}")
 
             return article_data
         except Exception as e:

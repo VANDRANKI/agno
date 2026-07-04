@@ -76,8 +76,8 @@ class Mem0Tools(Toolkit):
         if not resolved_user_id:
             try:
                 resolved_user_id = run_context.user_id
-            except Exception:
-                pass
+            except Exception as e:
+                log_debug(f"Could not resolve user_id from run_context: {e}")
         if not resolved_user_id:
             error_msg = f"Error in {method_name}: A user_id must be provided in the method call."
             log_error(error_msg)
