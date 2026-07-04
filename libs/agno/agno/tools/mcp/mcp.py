@@ -451,7 +451,7 @@ class MCPTools(Toolkit):
             return False
 
     async def connect(self, force: bool = False):
-        """Initialize a MCPTools instance and connect to the contextual MCP server"""
+        """Initialize an MCPTools instance and connect to the contextual MCP server"""
 
         if force:
             # Clean up the session and context so we force a new connection

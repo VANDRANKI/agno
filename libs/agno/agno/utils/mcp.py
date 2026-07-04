@@ -170,7 +170,7 @@ def get_entrypoint_for_tool(
 
 
 def prepare_command(command: str) -> list[str]:
-    """Sanitize a command and split it into parts before using it to run a MCP server."""
+    """Sanitize a command and split it into parts before using it to run an MCP server."""
     import os
     import shutil
     from shlex import split
