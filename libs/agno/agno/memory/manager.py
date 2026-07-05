@@ -159,6 +159,12 @@ class MemoryManager:
             set_log_level_to_info()
 
     def initialize(self, user_id: Optional[str] = None):
+        """Initialize the memory manager for a given user, applying the configured log level.
+
+        Args:
+            user_id: Optional user identifier. Currently unused by this method but accepted
+                for interface consistency with other initializers that are user-scoped.
+        """
         self.set_log_level()
 
     # -*- Public Functions
