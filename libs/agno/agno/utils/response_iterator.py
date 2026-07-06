@@ -1,15 +1,21 @@
-class ResponseIterator:
-    def __init__(self):
-        self.items = []
-        self.index = 0
+from typing import Any, List
 
-    def add(self, item):
+
+class ResponseIterator:
+    """Simple FIFO iterator that buffers items added via `add()` and yields them in insertion order."""
+
+    def __init__(self) -> None:
+        self.items: List[Any] = []
+        self.index: int = 0
+
+    def add(self, item: Any) -> None:
+        """Append an item to the end of the buffer."""
         self.items.append(item)
 
-    def __iter__(self):
+    def __iter__(self) -> "ResponseIterator":
         return self
 
-    def __next__(self):
+    def __next__(self) -> Any:
         if self.index >= len(self.items):
             raise StopIteration
         item = self.items[self.index]
