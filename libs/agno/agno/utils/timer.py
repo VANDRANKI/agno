@@ -1,5 +1,5 @@
 from time import perf_counter
-from typing import Optional
+from typing import Any, Dict, Optional
 
 
 class Timer:
@@ -33,7 +33,13 @@ class Timer:
         if self.start_time is not None:
             self.elapsed_time = self.end_time - self.start_time
 
-    def to_dict(self):
+    def to_dict(self) -> Dict[str, Any]:
+        """Serialize the timer's start time, end time, and elapsed duration.
+
+        Returns:
+            A dict with `start_time` and `end_time` as strings (or `None` if not set),
+            and `elapsed` as the elapsed duration in seconds.
+        """
         return {
             "start_time": str(self.start_time) if self.start_time is not None else None,
             "end_time": str(self.end_time) if self.end_time is not None else None,
