@@ -94,14 +94,20 @@ class CultureManager:
             self.model = OpenAIChat(id="gpt-4o")
         return self.model
 
-    def set_log_level(self):
+    def set_log_level(self) -> None:
+        """Set the global log level based on `debug_mode` or the `AGNO_DEBUG` env var.
+
+        Enables debug-level logging when `debug_mode` is `True` or `AGNO_DEBUG` is set
+        to `"true"`; otherwise falls back to info-level logging.
+        """
         if self.debug_mode or getenv("AGNO_DEBUG", "false").lower() == "true":
             self.debug_mode = True
             set_log_level_to_debug()
         else:
             set_log_level_to_info()
 
-    def initialize(self):
+    def initialize(self) -> None:
+        """Apply the configured log level in preparation for a run."""
         self.set_log_level()
 
     # -*- Public functions
