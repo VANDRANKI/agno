@@ -696,7 +696,7 @@ class Knowledge(RemoteKnowledge):
     async def apatch_content(self, content: Content) -> Optional[Dict[str, Any]]:
         return await self._aupdate_content(content)
 
-    def remove_content_by_id(self, content_id: str):
+    def remove_content_by_id(self, content_id: str) -> None:
         from agno.vectordb import VectorDb
 
         self.vector_db = cast(VectorDb, self.vector_db)
@@ -714,7 +714,7 @@ class Knowledge(RemoteKnowledge):
         if self.contents_db is not None:
             self.contents_db.delete_knowledge_content(content_id)
 
-    async def aremove_content_by_id(self, content_id: str):
+    async def aremove_content_by_id(self, content_id: str) -> None:
         if self.vector_db is not None:
             if self.vector_db.__class__.__name__ == "LightRag":
                 # For LightRAG, get the content first to find the external_id
@@ -732,13 +732,13 @@ class Knowledge(RemoteKnowledge):
             else:
                 self.contents_db.delete_knowledge_content(content_id)
 
-    def remove_all_content(self):
+    def remove_all_content(self) -> None:
         contents, _ = self.get_content()
         for content in contents:
             if content.id is not None:
                 self.remove_content_by_id(content.id)
 
-    async def aremove_all_content(self):
+    async def aremove_all_content(self) -> None:
         contents, _ = await self.aget_content()
         for content in contents:
             if content.id is not None:
@@ -885,13 +885,13 @@ class Knowledge(RemoteKnowledge):
     # PUBLIC API - READER MANAGEMENT METHODS
     # ==========================================
 
-    def construct_readers(self):
+    def construct_readers(self) -> None:
         """Initialize readers dictionary for lazy loading."""
         # Initialize empty readers dict - readers will be created on-demand
         if self.readers is None:
             self.readers = {}
 
-    def add_reader(self, reader: Reader):
+    def add_reader(self, reader: Reader) -> Reader:
         """Add a custom reader to the knowledge base."""
         if self.readers is None:
             self.readers = {}
