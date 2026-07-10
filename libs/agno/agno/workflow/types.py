@@ -714,12 +714,14 @@ class WorkflowMetrics:
             duration=data.get("duration"),
         )
 
-    def start_timer(self):
+    def start_timer(self) -> None:
+        """Start (or resume) the internal timer used to track workflow duration."""
         if self.timer is None:
             self.timer = Timer()
         self.timer.start()
 
-    def stop_timer(self, set_duration: bool = True):
+    def stop_timer(self, set_duration: bool = True) -> None:
+        """Stop the internal timer, optionally recording the elapsed time as `duration`."""
         if self.timer is not None:
             self.timer.stop()
             if set_duration:
