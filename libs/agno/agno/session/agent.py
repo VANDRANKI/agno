@@ -87,7 +87,7 @@ class AgentSession:
             summary=summary,
         )
 
-    def upsert_run(self, run: RunOutput):
+    def upsert_run(self, run: RunOutput) -> None:
         """Adds a RunOutput, together with some calculated data, to the runs list."""
         messages = run.messages
         for m in messages or []:
@@ -107,6 +107,7 @@ class AgentSession:
         log_debug("Added RunOutput to Agent Session")
 
     def get_run(self, run_id: str) -> Optional[Union[RunOutput, TeamRunOutput]]:
+        """Returns the run with the given run_id, or None if not found."""
         for run in self.runs or []:
             if run.run_id == run_id:
                 return run
