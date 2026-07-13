@@ -38,6 +38,7 @@ def current_datetime_utc() -> datetime:
 
 
 def current_datetime_utc_str() -> str:
+    """Return the current UTC time as an ISO 8601 string without a timezone suffix (e.g. '2024-01-01T12:00:00')."""
     return current_datetime_utc().strftime("%Y-%m-%dT%H:%M:%S")
 
 
