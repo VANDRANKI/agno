@@ -18,6 +18,7 @@ def is_empty(val: Any) -> bool:
 
 
 def get_image_str(repo: str, tag: str) -> str:
+    """Return the `repo:tag` string used to reference a container image."""
     return f"{repo}:{tag}"
 
 
