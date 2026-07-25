@@ -1,3 +1,4 @@
+import re
 from re import Pattern
 from typing import Dict, Optional, Union
 
@@ -28,10 +29,8 @@ class PIIDetectionGuardrail(BaseGuardrail):
         enable_phone_check: bool = True,
         custom_patterns: Optional[Dict[str, Pattern[str]]] = None,
     ):
-        import re
-
         self.mask_pii = mask_pii
-        self.pii_patterns = {}
+        self.pii_patterns: Dict[str, Pattern[str]] = {}
 
         if enable_ssn_check:
             self.pii_patterns["SSN"] = re.compile(r"\b\d{3}-\d{2}-\d{4}\b")
