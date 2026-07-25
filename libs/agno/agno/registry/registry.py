@@ -79,6 +79,14 @@ class Registry:
         return None
 
     def get_function(self, name: str) -> Optional[Callable]:
+        """Get a function by name from the registry.
+
+        Args:
+            name: The function name to look up
+
+        Returns:
+            The function if found, None otherwise
+        """
         return next((f for f in self.functions if f.__name__ == name), None)
 
     def get_agent(self, agent_id: str) -> Optional[Agent]:
