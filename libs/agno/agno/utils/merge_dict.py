@@ -24,6 +24,14 @@ def merge_parallel_session_states(original_state: Dict[str, Any], modified_state
     """
     Smart merge for parallel session states that only applies actual changes.
     This prevents parallel steps from overwriting each other's changes.
+
+    Args:
+        original_state (Dict[str, Any]): The baseline state to merge changes into, modified in place.
+        modified_states (List[Dict[str, Any]]): States produced by parallel steps, each compared
+            against `original_state` to detect actual changes.
+
+    Returns:
+        None: The function modifies `original_state` in place.
     """
     if not original_state or not modified_states:
         return
