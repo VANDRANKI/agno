@@ -149,7 +149,7 @@ _NAMES: list[str] = [
 def generate_human_readable_id() -> str:
     """Generate a human-readable ID backed by UUID4 uniqueness.
 
-    Format: ``adjective-name-hexsuffix``  (e.g. ``elegant-euler-3f2a1b4c``)
+    Format: ``adjective-name-hexsuffix``  (e.g. ``brave-euler-3f2a1b4c``)
 
     The adjective and name are selected deterministically from the UUID's
     integer value, and an 8-character hex suffix derived from the same UUID
