@@ -31,7 +31,18 @@ def is_valid_uuid(uuid_str: str) -> bool:
         return False
 
 
-def url_safe_string(input_string):
+def url_safe_string(input_string: str) -> str:
+    """Convert a string into a URL-safe, kebab-case slug.
+
+    Spaces, camelCase boundaries, and underscores are all converted to dashes,
+    special characters are stripped, and consecutive dashes are collapsed into one.
+
+    Args:
+        input_string: The string to convert.
+
+    Returns:
+        The URL-safe, kebab-case version of the input string.
+    """
     # Replace spaces with dashes
     safe_string = input_string.replace(" ", "-")
 
@@ -50,7 +61,15 @@ def url_safe_string(input_string):
     return safe_string
 
 
-def hash_string_sha256(input_string):
+def hash_string_sha256(input_string: str) -> str:
+    """Compute the SHA-256 hash of a string.
+
+    Args:
+        input_string: The string to hash.
+
+    Returns:
+        The hexadecimal digest of the SHA-256 hash.
+    """
     # Encode the input string to bytes
     encoded_string = input_string.encode("utf-8")
 
