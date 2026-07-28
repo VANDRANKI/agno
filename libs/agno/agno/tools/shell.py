@@ -1,3 +1,4 @@
+import subprocess
 from pathlib import Path
 from typing import List, Optional, Union
 
@@ -33,8 +34,6 @@ class ShellTools(Toolkit):
         Returns:
             str: The output of the command.
         """
-        import subprocess
-
         try:
             log_info(f"Running shell command: {args}")
             result = subprocess.run(
