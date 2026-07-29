@@ -3,9 +3,13 @@ from pathlib import Path
 import requests
 
 
-def download_cert(cert_url: str, filename: str = "cert.pem"):
+def download_cert(cert_url: str, filename: str = "cert.pem") -> str:
     """
     Downloads a CA certificate bundle if it doesn't exist locally.
+
+    Args:
+        cert_url (str): URL to download the certificate bundle from.
+        filename (str): Name to save the certificate file as, relative to ./certs.
 
     Returns:
         str: Path to the certificate file
