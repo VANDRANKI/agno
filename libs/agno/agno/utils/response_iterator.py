@@ -1,15 +1,22 @@
-class ResponseIterator:
-    def __init__(self):
-        self.items = []
-        self.index = 0
+from typing import Generic, List, TypeVar
 
-    def add(self, item):
+T = TypeVar("T")
+
+
+class ResponseIterator(Generic[T]):
+    """A simple forward-only iterator that yields previously added items in insertion order."""
+
+    def __init__(self) -> None:
+        self.items: List[T] = []
+        self.index: int = 0
+
+    def add(self, item: T) -> None:
         self.items.append(item)
 
-    def __iter__(self):
+    def __iter__(self) -> "ResponseIterator[T]":
         return self
 
-    def __next__(self):
+    def __next__(self) -> T:
         if self.index >= len(self.items):
             raise StopIteration
         item = self.items[self.index]
