@@ -286,7 +286,7 @@ class Function(BaseModel):
             sig = signature(c)
             type_hints = get_type_hints(c)
 
-            # If function has an the agent argument, remove the agent parameter from the type hints
+            # If function has an agent argument, remove the agent parameter from the type hints
             if "agent" in sig.parameters and "agent" in type_hints:
                 del type_hints["agent"]
             if "team" in sig.parameters and "team" in type_hints:
@@ -421,7 +421,7 @@ class Function(BaseModel):
             sig = signature(self.entrypoint)
             type_hints = get_type_hints(self.entrypoint)
 
-            # If function has an the agent argument, remove the agent parameter from the type hints
+            # If function has an agent argument, remove the agent parameter from the type hints
             if "agent" in sig.parameters and "agent" in type_hints:
                 del type_hints["agent"]
             if "team" in sig.parameters and "team" in type_hints:
