@@ -49,6 +49,9 @@ class WikipediaReader(Reader):
         except wikipedia.exceptions.PageError:
             summary = None
             log_info("Wikipedia Error: Page not found.")
+        except wikipedia.exceptions.DisambiguationError as e:
+            summary = None
+            log_info(f"Wikipedia Error: '{topic}' is ambiguous. Possible options: {e.options}")
 
         # Only create Document if we successfully got a summary
         if summary:
@@ -80,6 +83,9 @@ class WikipediaReader(Reader):
         except wikipedia.exceptions.PageError:
             summary = None
             log_info("Wikipedia Error: Page not found.")
+        except wikipedia.exceptions.DisambiguationError as e:
+            summary = None
+            log_info(f"Wikipedia Error: '{topic}' is ambiguous. Possible options: {e.options}")
 
         # Only create Document if we successfully got a summary
         if summary:
