@@ -113,7 +113,7 @@ class MemoryManager:
             self.model = OpenAIChat(id="gpt-4o")
         return self.model
 
-    def read_from_db(self, user_id: Optional[str] = None):
+    def read_from_db(self, user_id: Optional[str] = None) -> Optional[Dict[str, List[UserMemory]]]:
         if self.db:
             # If no user_id is provided, read all memories
             if user_id is None:
@@ -129,7 +129,7 @@ class MemoryManager:
             return memories
         return None
 
-    async def aread_from_db(self, user_id: Optional[str] = None):
+    async def aread_from_db(self, user_id: Optional[str] = None) -> Optional[Dict[str, List[UserMemory]]]:
         if self.db:
             if isinstance(self.db, AsyncBaseDb):
                 # If no user_id is provided, read all memories
@@ -151,14 +151,14 @@ class MemoryManager:
             return memories
         return None
 
-    def set_log_level(self):
+    def set_log_level(self) -> None:
         if self.debug_mode or getenv("AGNO_DEBUG", "false").lower() == "true":
             self.debug_mode = True
             set_log_level_to_debug()
         else:
             set_log_level_to_info()
 
-    def initialize(self, user_id: Optional[str] = None):
+    def initialize(self, user_id: Optional[str] = None) -> None:
         self.set_log_level()
 
     # -*- Public Functions
