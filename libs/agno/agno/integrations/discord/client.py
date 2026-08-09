@@ -18,7 +18,7 @@ except (ImportError, ModuleNotFoundError):
 
 
 class RequiresConfirmationView(discord.ui.View):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.value = None
 
@@ -27,7 +27,7 @@ class RequiresConfirmationView(discord.ui.View):
         self,
         interaction: discord.Interaction,
         button: discord.ui.Button,
-    ):
+    ) -> None:
         self.value = True
         button.disabled = True
         await interaction.response.edit_message(view=self)
@@ -39,14 +39,14 @@ class RequiresConfirmationView(discord.ui.View):
         self,
         interaction: discord.Interaction,
         button: discord.ui.Button,
-    ):
+    ) -> None:
         self.value = False
         button.disabled = True
         await interaction.response.edit_message(view=self)
         self.clear_items()
         self.stop()
 
-    async def on_timeout(self):
+    async def on_timeout(self) -> None:
         log_warning("Agent Timeout Error")
 
 
@@ -63,9 +63,9 @@ class DiscordClient:
             self.client = client
         self._setup_events()
 
-    def _setup_events(self):
+    def _setup_events(self) -> None:
         @self.client.event
-        async def on_message(message):
+        async def on_message(message: discord.Message) -> None:
             if message.author == self.client.user:
                 log_info(f"sent {message.content}")
                 return
@@ -204,11 +204,11 @@ class DiscordClient:
             else:
                 await thread.send(batch_message)  # type: ignore
 
-    def serve(self):
+    def serve(self) -> None:
         try:
             token = getenv("DISCORD_BOT_TOKEN")
             if not token:
-                raise ValueError("DISCORD_BOT_TOKEN NOT SET")
+                raise ValueError("DISCORD_BOT_TOKEN environment variable is not set")
             return self.client.run(token)
         except Exception as e:
             raise ValueError(f"Failed to run Discord client: {str(e)}")
