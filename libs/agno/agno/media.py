@@ -66,6 +66,7 @@ class Image(BaseModel):
         return None
 
     async def aget_content_bytes(self) -> Optional[bytes]:
+        """Get image content as raw bytes, loading from URL/file if needed (async)"""
         if self.content:
             return self.content
         elif self.url:
@@ -182,6 +183,7 @@ class Audio(BaseModel):
         return None
 
     async def aget_content_bytes(self) -> Optional[bytes]:
+        """Get audio content as raw bytes (async)"""
         if self.content:
             return self.content
         elif self.url:
@@ -314,6 +316,7 @@ class Video(BaseModel):
         return None
 
     async def aget_content_bytes(self) -> Optional[bytes]:
+        """Get video content as raw bytes (async)"""
         if self.content:
             return self.content
         elif self.url:
@@ -488,6 +491,7 @@ class File(BaseModel):
             return None
 
     def get_content_bytes(self) -> Optional[bytes]:
+        """Get file content as raw bytes, loading from URL/file if needed"""
         if self.content:
             if isinstance(self.content, bytes):
                 return self.content
@@ -504,6 +508,7 @@ class File(BaseModel):
         return None
 
     async def aget_content_bytes(self) -> Optional[bytes]:
+        """Get file content as raw bytes, loading from URL/file if needed (async)"""
         if self.content:
             if isinstance(self.content, bytes):
                 return self.content
