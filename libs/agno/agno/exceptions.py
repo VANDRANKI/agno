@@ -6,6 +6,12 @@ from agno.models.message import Message
 
 
 class AgentRunException(Exception):
+    """Base exception for signaling control-flow changes during an agent run.
+
+    Subclasses (RetryAgentRun, StopAgentRun) are typically raised from within
+    a tool call to influence how the agent run should proceed.
+    """
+
     def __init__(
         self,
         exc,
@@ -175,7 +181,11 @@ class ContextWindowExceededError(ModelProviderError):
 
 
 class EvalError(Exception):
-    """Exception raised when an evaluation fails."""
+    """Exception raised when an evaluation run fails.
+
+    Used by the agno.eval module to signal that an accuracy, performance,
+    or reliability evaluation could not be completed.
+    """
 
     pass
 
@@ -236,6 +246,8 @@ class OutputCheckError(Exception):
 
 @dataclass
 class RetryableModelProviderError(Exception):
+    """Exception raised when a model provider error is safe to retry."""
+
     original_error: Optional[str] = None
     # Guidance message to retry a model invocation after an error
     retry_guidance_message: Optional[str] = None
