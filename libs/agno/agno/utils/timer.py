@@ -12,7 +12,14 @@ class Timer:
 
     @property
     def elapsed(self) -> float:
-        return self.elapsed_time or (perf_counter() - self.start_time) if self.start_time else 0.0
+        # Prefer the recorded elapsed time (set once `stop()` has run) over recomputing
+        # it live, and use `is not None` checks so a genuinely zero elapsed time isn't
+        # mistaken for "not stopped yet" and recomputed against a stale start_time.
+        if self.elapsed_time is not None:
+            return self.elapsed_time
+        if self.start_time is not None:
+            return perf_counter() - self.start_time
+        return 0.0
 
     def start(self) -> float:
         self.start_time = perf_counter()
