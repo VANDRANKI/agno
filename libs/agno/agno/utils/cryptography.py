@@ -1,9 +1,15 @@
+from typing import Tuple
+
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
 
 
-def generate_rsa_keys():
-    """Generate RSA key pair for RS256 JWT signing/verification."""
+def generate_rsa_keys() -> Tuple[str, str]:
+    """Generate RSA key pair for RS256 JWT signing/verification.
+
+    Returns:
+        A tuple of `(private_key_pem, public_key_pem)`.
+    """
     private_key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
 
     # Private key PEM (used by auth server to sign tokens)
