@@ -4,7 +4,7 @@ from pathlib import Path
 from agno.utils.log import log_error
 
 
-def open_html_file(file_path: Path):
+def open_html_file(file_path: Path) -> None:
     """
     Opens the specified HTML file in the default web browser.
     :param file_path: Path to the HTML file.
