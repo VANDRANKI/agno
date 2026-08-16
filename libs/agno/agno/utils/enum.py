@@ -5,6 +5,7 @@ from typing import Any, List, Optional
 class ExtendedEnum(Enum):
     @classmethod
     def values_list(cls: Any) -> List[Any]:
+        """Return the values of all members of this enum, in declaration order."""
         return list(map(lambda c: c.value, cls))
 
     @classmethod
