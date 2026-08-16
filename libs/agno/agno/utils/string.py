@@ -301,7 +301,7 @@ def generate_id_from_name(name: Optional[str] = None) -> str:
 def sanitize_postgres_string(value: Optional[str]) -> Optional[str]:
     """Remove illegal chars from string values to prevent PostgreSQL encoding errors.
 
-    This function all chars illegal in Postgres UTF-8 text fields.
+    This function removes all chars illegal in Postgres UTF-8 text fields.
     Useful to prevent CharacterNotInRepertoireError when storing strings.
 
     Args:
