@@ -82,6 +82,11 @@ class CultureManager:
         self.debug_mode = debug_mode
 
     def get_model(self) -> Model:
+        """Return the configured model, falling back to the default OpenAI model.
+
+        If no model was provided, lazily instantiates and caches the default
+        `OpenAIChat` model. Exits the process if `openai` is not installed.
+        """
         if self.model is None:
             try:
                 from agno.models.openai import OpenAIChat
@@ -95,6 +100,7 @@ class CultureManager:
         return self.model
 
     def set_log_level(self):
+        """Set the log level to debug if `debug_mode` or `AGNO_DEBUG` is enabled, else info."""
         if self.debug_mode or getenv("AGNO_DEBUG", "false").lower() == "true":
             self.debug_mode = True
             set_log_level_to_debug()
@@ -102,6 +108,7 @@ class CultureManager:
             set_log_level_to_info()
 
     def initialize(self):
+        """Run one-time setup for the manager (currently just applies the log level)."""
         self.set_log_level()
 
     # -*- Public functions
