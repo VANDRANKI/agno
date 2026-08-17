@@ -345,7 +345,11 @@ class LearningMachine:
 
     @property
     def requires_history(self) -> bool:
-        # PROPOSE and HITL modes need chat history for multi-turn confirmation
+        """True if any configured store uses a mode that needs chat history.
+
+        PROPOSE and HITL modes need chat history for multi-turn confirmation
+        (the agent proposes a learning, then waits for user confirmation).
+        """
         modes_needing_history = {LearningMode.PROPOSE, LearningMode.HITL}
         for cfg in (
             self.learned_knowledge,
