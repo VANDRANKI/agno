@@ -359,7 +359,7 @@ def __init__(
 
     team.followups = followups
     if num_followups < 1:
-        raise ValueError("num_followups must be at least 1")
+        raise ValueError(f"num_followups must be at least 1, got {num_followups}")
     team.num_followups = num_followups
     team.followup_model = followup_model  # type: ignore[assignment]
 
